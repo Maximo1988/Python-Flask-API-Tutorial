@@ -1,8 +1,8 @@
+import json
 from flask import Flask, jsonify
 from flask import request
 app = Flask(__name__)
-todos=[{"label": "My first task", "done": False}]
-add_new_todo=[{"label":"My second task", "done": False}]
+todos=[{ "label": "My first task", "done": True }]
 
 @app.route('/todos', methods=['GET'])
 def task():
@@ -10,12 +10,17 @@ def task():
 
 @app.route('/todos', methods=['POST'])
 def add_new_todo():
-    request_body = request.data
+    # curl -X POST 0.0.0.0:3245/todos -H "Content-Type: application/json" -d '{ "done": false, "label": "Sample Todo 3"}'
+    request_body = request.get_json(force=True)
+    todos.append(request_body)
     print("Incoming request with the following body", request_body)
-    return 'Response for the POST todo'
+    return jsonify(todos)
 
-import json
-decoded_object = json.loads(request.data)
+@app.route('/todos/<int:position>', methods=['DELETE'])
+def delete_todo(position):
+    todos.pop(position)
+    print("This is the position to delete: ",position)
+    return jsonify(todos)
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=3245, debug=True)
